@@ -1,90 +1,98 @@
 import React, { Component } from 'react';
-import axios from 'axios';
 import InfiniteScroll from 'react-infinite-scroller';
-import Gallery from 'react-grid-gallery';
+import PhotoGridItem from './components/PhotoGridItem.js'
+import PhotoModal from './components/PhotoModal.js'
+import { apiService } from './services/apiService.js'
 import './App.css';
 
 class App extends Component {
-  constructor(props) {
-    super(props);
-    this.current_page = 0;
-    this.total_pages = 1;
-    this.hasMoreItems = true;
-    this.isLoading = false;
-    this.state = {
-      images: []
-    };
-  }
-
-  static mapGetPhotosResponse(response) {
-    const mappedImages = response.data.photos.map(photo => {
-      return {
-        src: photo.image_url[1],
-        thumbnail: photo.image_url[0],
-        caption: photo.name,
-        thumbnailWidth: 440,
-        thumbnailHeight: 440
-      };
-    });
-    return {
-      current_page: response.data.current_page,
-      total_pages: response.data.total_pages,
-      images: mappedImages
-    };
-  }
-
-  static getPhotos(params) {
-    return axios
-      .get('https://api.500px.com/v1/photos', {
-        params: {
-          page: params.page,
-          feature: 'popular',
-          consumer_key: 'P7LLhKkPAnPUpbfAXk3Jq2iDjYmCx87zgfEDxQVS',
-          image_size: '440,1080'
-        }
-      })
-      .then(App.mapGetPhotosResponse);
-  }
-
-  loadMore() {
-    if (this.isLoading || !this.hasMoreItems) {
-      return;
+    constructor(props) {
+        super(props);
+        this.state = {
+            currentPage: 0,
+            totalPages: 1,
+            isLoading: false,
+            images: [],
+            showModal: false,
+            modalItem: {}
+        };
     }
-    this.isLoading = true;
 
-    App.getPhotos({
-      page: this.current_page + 1
-    })
-      .then(mappedResponse => {
-        this.isLoading = false;
-        this.current_page = mappedResponse.current_page;
-        this.total_pages = mappedResponse.total_pages;
-        this.hasMoreItems = this.current_page <= this.total_pages;
+    openImage = modalItem => {
         this.setState({
-          images: [...this.state.images, ...mappedResponse.images]
+            showModal: true,
+            modalItem: modalItem
         });
-      })
-      .catch(function(error) {
-        console.log('Error in fetching photos', error);
-      });
-  }
+    };
 
-  render() {
-    return (
-      <div className='App'>
-        <h2 className="photo-heading"> Popular at 500px </h2>
-        <InfiniteScroll
-          className='infinite-scroll-gallary-container'
-          pageStart={0}
-          loadMore={this.loadMore.bind(this)}
-          hasMore={this.hasMoreItems}
-          loader={<div className='loader' key={0}> Loading ...</div>}
-        >
-          <Gallery images={this.state.images} enableImageSelection={false} />
-        </InfiniteScroll>
-      </div>
-    );
-  }
+    closeImage = () => {
+        this.setState({
+            showModal: false,
+            modalItem: {}
+        });
+    };
+
+    loadMore = () => {
+        this.setState({ isLoading: true });
+        apiService.getPhotos({
+            page: this.state.currentPage + 1,
+            feature: 'popular',
+            image_size: '440,1080'
+        })
+            .then(mappedResponse => {
+                this.setState({
+                    isLoading: false,
+                    currentPage: mappedResponse.currentPage,
+                    totalPages: mappedResponse.totalPages,
+                    images: [...this.state.images, ...mappedResponse.images]
+                });
+            })
+            .catch(function(error) {
+                console.log('Error in fetching photos', error);
+            });
+    };
+
+    render() {
+        return (
+            <div className='App'>
+                <InfiniteScroll
+                    className='infinite-scroll-container'
+                    pageStart={0}
+                    loadMore={this.loadMore}
+                    hasMore={
+                        !this.state.isLoading &&
+                        this.state.currentPage < this.state.totalPages
+                    }
+                    threshold={20}
+                    loader={
+                        <div className='loader' key={0}>
+                            {'Loading ...'}
+                        </div>
+                    }
+                >
+                    <h2> Popular at 500px </h2>
+                    <div className='photos-grid'> {
+                        this.state.images.map((image, index) => {
+                            return (
+                                <PhotoGridItem
+                                    whichItem={image}
+                                    openImage={this.openImage}
+                                    key={index}
+                                />
+                            );
+                        }) }
+                    </div>
+                </InfiniteScroll>
+                {this.state.showModal ? (
+                    <PhotoModal
+                        showModal={this.state.showModal}
+                        closeImage={this.closeImage}
+                        modalItem={this.state.modalItem}
+                    />
+                ) : null}
+            </div>
+        );
+    }
 }
 
 export default App;
