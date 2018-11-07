@@ -1,9 +1,10 @@
 import axios from 'axios';
+import { defaultConfiguration } from "../configuration.js"
 
 class ApiService {
 
     consumerKey = {
-        'consumer_key': 'P7LLhKkPAnPUpbfAXk3Jq2iDjYmCx87zgfEDxQVS'
+        'consumer_key': defaultConfiguration.consumer_key
     };
 
     constructor() {
