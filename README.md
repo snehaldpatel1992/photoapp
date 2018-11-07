@@ -1,4 +1,4 @@
-Evolution of solution 
+## Evolution of solution 
 
 In the beginning, I used npm library 'react-grid-gallery' but it was not customizable.
 Therefore I created modal and gallery components myself.  
