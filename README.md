@@ -1,3 +1,20 @@
+Evolution of solution 
+
+In the beginning, I used npm library 'react-grid-gallery' but it was not customizable.
+Therefore I created modal and gallery components myself.  
+
+For listing of photos, I used very simple grid with fixed height and width. There is a very soft fadeIn animation on the listing of photos.
+
+For Photo modal, I displayed name and description of the image, and added zoomIn animation on enter.
+
+In terms of technical aspects of the solution, I tried to keep it very simple as keeping in mind the scope of the challenge.
+
+Further Development on this solution can be improvised by adding things like Redux,testing, mock server, linting, prettier and so on.   
+
+
+
+
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
